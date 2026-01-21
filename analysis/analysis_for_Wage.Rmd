@@ -1,0 +1,90 @@
+---
+title: "analysis_for_Wage"
+output: html_document
+---
+
+# BIOS 731: HW1 {.unnumbered}
+
+**NAME:**
+
+Angela Yu
+
+```{r, include=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+colorize <- function(x, color) {
+  if (knitr::is_latex_output()) {
+    sprintf("\\textcolor{%s}{%s}", color, x)
+  } else if (knitr::is_html_output()) {
+    sprintf("<span style='color: %s;'>%s</span>", color, x)
+  } else x
+}
+
+```
+
+```{r setup, include=FALSE}
+library(here)
+here::i_am("analysis/analysis_for_Wage.Rmd")
+```
+
+## Data Source and Descriptions
+
+This report is based on an analysis from my previous coursework. For the analysis, I use the *Wage* dataset, which contains detailed demographic and income information on U.S. male workers. The dataset includes each worker's annual wage along with demographic and labor-market characteristics such as age, year, education level, and race classification. This is an observational, cross-sectional dataset of approximately 3,000 workers collected between 2003--2009. Each row corresponds to one unique individual. The primary variables for this analysis are:
+
+-   `wage`: annual wages (in U.S. dollars)\
+-   `age`: worker's age (years)\
+-   `year`: calendar year\
+-   `education`: categorical educational attainment\
+-   `race`: categorical race classification
+
+## Study Goal
+
+I aim to estimate the population mean annual wages for workers as a function of age and education class, adjusting for year and race.
+
+## Data Cleaning
+
+I convert the categorical variables (race, education) into factor format
+
+```{r data-cleaning}
+source(here("source", "00_clean_data.R"), local = knitr::knit_global())
+```
+
+## Exploratory Data Analysis (EDA)
+
+I convert the categorical variables (race, education) into factor format
+
+```{r data-visualizing}
+source(here("source", "01_visualize.R"), local = knitr::knit_global())
+```
+
+```{r, echo=FALSE, out.width="49%"}
+knitr::include_graphics(c(
+  here::here("results","figures", "fig1_wage_distribution.png"),
+  here::here("results","figures", "fig2_wage_vs_age_edu.png")
+))
+```
+
+## Model procedure
+
+Based on the EDA results, I would fit the model with a log-transformation of the outcome, using log(wage) instead of wage to make the variance more stable and improve normality. Categorical variables including race and education are also adjusted for potential confounding.
+In addition, the wage–age plots by education indicate that the shape of the age–wage relationship differs across education groups. Therefore, I would include an education-specific smooth of age (s(age,by=education)), allowing more flexible non-linear age effects that vary by education level.
+
+The model equation is shown below:
+
+$$
+log(wage_i)=\beta_0+s(age_i)+s(age_i, by = education_i)+race_i+education_i+\epsilon_i,
+$$
+
+```{r data-modelling}
+source(here("source", "02_modelling.R"), local = knitr::knit_global())
+```
+
+## Results
+
+The selected model is a generalized additive model (GAM) with outcome as the log-transformed wage, a smooth function for age, education-specific smooth functions for age, and linear effects of categorical variables race and education. Based on the diagnostic results, this model generally fulfills all the GAM model assumptions, and handle the complex non-linear and mixture relationships between predictors and the outcome.
+
+Figure below shows the observed wages and the fitted age–wage trends by education level. The fitted curves align well with the central patterns in the raw data and our results from EDA, indicating that the model successfully captures the main features of the wage distribution while allowing for flexible, education-specific age effects.
+
+From the plots below, we can tell that there's a clear nonlinear relationship between age and wage. Across all education levels, wages tend to increase rapidly during early working ages, followed by a slower growth phase and a plateau or slight decline at older ages. In addition, the shape of smooth functions varies across education levels. Firstly, all individuals across groups experience an increase in wage in their early age. The wage level would last in their middle ages until they retired (60 years old). Only individuals with advanced degrees can still keep their high level of wage after 60 years old. Besides, compared with people of lower education levels, college graduates have a sharper decrease in their wage level after 60. The results is consistent across race groups.
+
+```{r, echo=FALSE, out.width="100%"}
+knitr::include_graphics(here::here("results", "figures", "age_wage_trends_all_races.png"))
+```
