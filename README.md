@@ -86,6 +86,12 @@ This folder contains all figures generated during EDA and model validation:
 - **`README.md`** - This documentation file explaining the project structure and usage.
 
 ---
+
+## Reproducible
+
+Fork the repository and knit `analysis_for_Wage.Rmd`.
+---
+
 ## SystemInfo
 
 R version 4.4.2 (2024-10-31 ucrt)
